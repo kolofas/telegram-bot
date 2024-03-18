@@ -9,7 +9,6 @@ from telebot import types
 logger = telebot.logger
 working_directory = os.getcwd()
 
-# bot_name = https://t.me/real_cool_bobot
 # settings
 logger.setLevel(logging.INFO)
 
@@ -83,7 +82,7 @@ class MyPot:
 
     def welcome(self, message):
         user = users.get(str(message.chat.id))
-        print(user)
+    
         if user:
             if user.get('role_id'):
                 self.bot.send_message(chat_id=message.chat.id,
@@ -152,17 +151,18 @@ class MyPot:
     def process_shift(self, callback):
         message = callback.message
         user_id = str(message.chat.id)
-        print(user_id)
-        print(type(user_id))
+        
         users = data_users.read_json()
         roles = data_roles.read_json()
-        print(users)
+        
         role_id = users.get(user_id).get('role_id')
         role_id = str(role_id)
+        
         action = callback.data.split('_')[0]
         all_points = roles.get(role_id).get(f'all_points_{action}')
         all_points = {int(k): v for k, v in all_points.items()}
         done_points = roles.get(role_id).get(f'done_points_{action}')
+        
         if done_points:
             points = set(all_points) - set(done_points)
             text = 'Чек-лист уже выполняется'
@@ -170,10 +170,12 @@ class MyPot:
         else:
             points = all_points
             text = 'Начните выполнение чеклиста, выбрав один из пунктов:'
+        
         callback_messages = roles.get(role_id).get('callback_messages')
         callback_messages.append((message.message_id, message.chat.id))
         data_roles.write_file_json(roles)
         markup = types.InlineKeyboardMarkup(row_width=1)
+        
         for point_id in points:
             btn = types.InlineKeyboardButton(
                 text=f'{point_id}. {all_points[point_id]}',
